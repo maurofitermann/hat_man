@@ -17,8 +17,6 @@ const client = new Client({ intents: [
 ] 
 });
 
-
-
 // TO DO: MAKE SLASH COMMANDS WORK
 /*
 client.commands = new Collection();
@@ -36,19 +34,20 @@ for (const file of commandFiles) {
 		console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
 	}
 }
-
+*/
 
 
 // When the client is ready, run this code (only once)
 // We use 'c' for the event parameter to keep it separate from the already defined 'client'
 client.once(Events.ClientReady, c => {
 	console.log(`Ready! Logged in as ${c.user.tag}`);
-	//console.log(client.commands)
+	mongoose.connect(process.env.MONGO_URI)
 });
 
 // Log in to Discord with your client's token
 client.login(process.env.CLIENT_TOKEN);
 
+/*
 client.on(Events.InteractionCreate, async interaction => {
 	if (!interaction.isChatInputCommand()) return;
 
@@ -73,10 +72,43 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 */
 
+const messageCountSchema = require("./schemas/message-count-schema")
+const messageCountModel = mongoose.model("messageCount", messageCountSchema)
+
+const mongoTestSchema = require("./schemas/mongo-test-schema")
+const mongoTestModel = mongoose.model("mongoTest", mongoTestSchema)
+
 client.on(Events.MessageCreate, (message) =>{
-	console.log(message.content)
-	//if (message.author!=)
+	//console.log(message.content)
+	//console.log(message.author.id)
 	if (message.content=="test message"){
 		message.reply("test reply test reply"
 		)}
 })
+
+client.on(Events.MessageCreate, async (message) =>{
+	console.log("about to try to find and update")
+	console.log(`The data type of message.author.id is: ${typeof message.author.id}`)
+
+	if (message.content=="test mongo"){
+	try{
+		await mongoTestModel.create({autorazo: message.author.displayName})}
+		catch(err){console.log(err.message)}
+	}
+	try{
+	await messageCountModel.findOneAndUpdate(
+		{_id: message.author.id},
+		{_id: message.author.id,
+		$inc: {
+			messageCount: 1
+		}
+	}, {
+		upsert: true
+	})}
+	catch(err){console.log(err.message)}
+})
+
+
+
+
+
