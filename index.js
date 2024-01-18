@@ -17,67 +17,34 @@ const client = new Client({ intents: [
 ] 
 });
 
-// TO DO: MAKE SLASH COMMANDS WORK
-/*
-client.commands = new Collection();
-
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-	const filePath = path.join(commandsPath, file);
-	const command = require(filePath);
-	// Set a new item in the Collection with the key as the command name and the value as the exported module
-	if ('data' in command && 'execute' in command) {
-		client.commands.set(command.data.name, command);
-	} else {
-		console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+client.once(Events.ClientReady, async (c) => {
+	// Connection events.
+	mongoose.connection.on('connected', () => {
+		console.log('MongoDB connected');
+	  });
+	  
+	mongoose.connection.on('error', (err) => {
+		console.error(`MongoDB connection error: ${err}`);
+	  });
+	  
+	mongoose.connection.on('disconnected', () => {
+		console.log('MongoDB disconnected');
+	  });
+	  
+	try {
+	  await mongoose.connect(process.env.MONGO_URI);
+	  console.log(`Connected to MongoDB`);
+	  console.log(`Ready! Logged in as ${c.user.tag}`);
+	} catch (error) {
+	  console.error(`Error connecting to MongoDB: ${error.message}`);
 	}
-}
-*/
-
-
-// When the client is ready, run this code (only once)
-// We use 'c' for the event parameter to keep it separate from the already defined 'client'
-client.once(Events.ClientReady, c => {
-	console.log(`Ready! Logged in as ${c.user.tag}`);
-	mongoose.connect(process.env.MONGO_URI)
-});
+  });
+  
 
 // Log in to Discord with your client's token
 client.login(process.env.CLIENT_TOKEN);
 
-/*
-client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isChatInputCommand()) return;
-
-	const command = interaction.client.commands.get(interaction.commandName);
-
-	if (!command) {
-		console.error(`No command matching ${interaction.commandName} was found.`);
-		return;
-	}
-
-	try {
-		await command.execute(interaction);
-	} catch (error) {
-		console.error(error);
-		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-		} else {
-			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-		}
-	}
-	console.log(interaction);
-});
-*/
-
-const messageCountSchema = require("./schemas/message-count-schema")
-const messageCountModel = mongoose.model("messageCount", messageCountSchema)
-
-const mongoTestSchema = require("./schemas/mongo-test-schema")
-const mongoTestModel = mongoose.model("mongoTest", mongoTestSchema)
-
+// #1 On message create, si el texto del mensaje es test message", hat_man responde a ese mensaje con "test reply test reply".
 client.on(Events.MessageCreate, (message) =>{
 	//console.log(message.content)
 	//console.log(message.author.id)
@@ -86,29 +53,21 @@ client.on(Events.MessageCreate, (message) =>{
 		)}
 })
 
+//#2
+const mongoTestModel = require("./schemas/mongo-test-schema")
+
 client.on(Events.MessageCreate, async (message) =>{
-	console.log("about to try to find and update")
-	console.log(`The data type of message.author.id is: ${typeof message.author.id}`)
-
 	if (message.content=="test mongo"){
-	try{
-		await mongoTestModel.create({autorazo: message.author.displayName})}
-		catch(err){console.log(err.message)}
+		console.log("Starting mongoDB test...")
+		console.log('Connection status:', mongoose.connection.readyState);
+		try {
+			const result = await mongoTestModel.create({
+			  discordId: message.author.id,
+			  autorazo: message.author.displayName,
+			});
+			console.log("Document created successfully: ", result);
+		  } catch (err) {
+			console.error("Error creating document: ", err.message);
+		  }
 	}
-	try{
-	await messageCountModel.findOneAndUpdate(
-		{_id: message.author.id},
-		{_id: message.author.id,
-		$inc: {
-			messageCount: 1
-		}
-	}, {
-		upsert: true
-	})}
-	catch(err){console.log(err.message)}
 })
-
-
-
-
-

@@ -1,7 +1,7 @@
 const { Schema, model, models } = require("mongoose")
 
 const mongoTestSchema = new Schema({
-_id: {
+discordId: {
     // Discord user ID
     type: String,
     required: true
@@ -13,4 +13,4 @@ autorazo: {
 })
 
 const name = "mongo-tests"
-module.exports - models[name] || model(name, mongoTestSchema)
+module.exports = models[name] || model(name, mongoTestSchema)

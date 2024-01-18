@@ -1,7 +1,7 @@
 const { Schema, model, models } = require("mongoose")
 
 const messageCountSchema = new Schema({
-_id: {
+discordId: {
     // Discord user ID
     type: String,
     required: true
@@ -13,4 +13,4 @@ messageCount: {
 })
 
 const name = "message-counts"
-module.exports - models[name] || model(name, messageCountSchema)
+module.exports = models[name] || model(name, messageCountSchema)
