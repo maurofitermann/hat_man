@@ -13,7 +13,8 @@ const client = new Client({ intents: [
 	GatewayIntentBits.GuildMessages,
 	GatewayIntentBits.GuildMessageReactions,
 	GatewayIntentBits.GuildMembers,
-	GatewayIntentBits.MessageContent	
+	GatewayIntentBits.MessageContent
+	//AGREGAR EL INTENT DE PRESENCES?
 ] 
 });
 
@@ -36,7 +37,7 @@ client.once(Events.ClientReady, async (c) => {
 	  console.log(`Connected to MongoDB`);
 	  console.log(`Ready! Logged in as ${c.user.tag}`);
 	} catch (error) {
-	  console.error(`Error connecting to MongoDB: ${error.message}`);
+	console.error(`Error connecting to MongoDB: ${error.message}`);
 	}
   });
   
@@ -46,10 +47,8 @@ client.login(process.env.CLIENT_TOKEN);
 
 // #1 On message create, si el texto del mensaje es test message", hat_man responde a ese mensaje con "test reply test reply".
 client.on(Events.MessageCreate, (message) =>{
-	//console.log(message.content)
-	//console.log(message.author.id)
-	if (message.content=="test message"){
-		message.reply("test reply test reply"
+	if (message.content=="ping"){
+		message.reply("pong"
 		)}
 })
 
@@ -71,3 +70,24 @@ client.on(Events.MessageCreate, async (message) =>{
 		  }
 	}
 })
+
+//#3 auto-Pinner
+
+client.on(Events.MessageReactionAdd, async (reaction, user) => {
+	// Check if the reaction is added to a specific message
+	if (user.id !== client.user.id && reaction.emoji.name== '📌' ) {
+	  console.log(`${user.username} voted to pin message: `, reaction.message.content);
+		if(reaction.count>0){reaction.message.pin()}
+	  //console.log(`reaction.emoji.name is ${reaction.emoji.name}`)
+	  //console.log(`reaction.count is ${reaction.count}`)
+	}
+});
+
+client.on(Events.MessageReactionRemove, async (reaction, user) => {
+	if (user.id !== client.user.id && reaction.emoji.name== '📌' ) {
+	  const foo=`${user.username} voted to unpin message: ${reaction.message.content}`
+		console.log(foo)
+		reaction.message.reply(foo)
+		if(reaction.count<1){reaction.message.unpin()}
+	}
+});
