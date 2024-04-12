@@ -1,5 +1,5 @@
-** node_modules
-** .env
-** casas.json
-** config.json
+node_modules
+.env
+**casas.json
+**config.json
 *.config
