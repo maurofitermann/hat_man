@@ -1,5 +1,4 @@
 node_modules
 .env
-**casas.json
-**config.json
-*.config
+config.json
+transportedata/casas.json
